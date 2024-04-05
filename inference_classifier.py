@@ -23,7 +23,7 @@ while True:
     y_ = []
 
     ret, frame = cap.read()
-
+    # H W Channel shape
     H, W, _ = frame.shape
 
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -31,6 +31,17 @@ while True:
     results = hands.process(frame_rgb)
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
+            # (
+    # image: np.ndarray,
+    # landmark_list: landmark_pb2.NormalizedLandmarkList,
+    # connections: Optional[List[Tuple[int, int]]] = None,
+    # landmark_drawing_spec: Union[DrawingSpec,
+    #                              Mapping[int, DrawingSpec]] = DrawingSpec(
+    #                                  color=RED_COLOR),
+    # connection_drawing_spec: Union[DrawingSpec,
+    #                                Mapping[Tuple[int, int],
+    #                                        DrawingSpec]] = DrawingSpec(),
+    # is_drawing_landmarks: bool = True):
             mp_drawing.draw_landmarks(
                 frame,  # image to draw
                 hand_landmarks,  # model output
