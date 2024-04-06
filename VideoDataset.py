@@ -120,7 +120,7 @@ class VideoDataset():
             data = file['data']
             labels = file['labels']
         return data,labels
-dataset = VideoDataset(class_names=['one','two','three'], n_classes=3, n_frames=10)
+# dataset = VideoDataset(class_names=['one','two','three'], n_classes=3, n_frames=10)
 # # dataset.capture_video()
 # data,labels = dataset.get_landmark_dataset()
 # print(data)

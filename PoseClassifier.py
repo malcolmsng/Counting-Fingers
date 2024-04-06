@@ -8,9 +8,12 @@ import numpy as np
 import torch.nn as nn
 import torch
 from torch.utils.data import DataLoader 
+import cv2
+import mediapipe as mp
+import numpy as np
 
 
-class PoseClassifier():
+class PoseTrainer():
 
     def __init__(self, dataset: VideoDataset, model: int = 0):
         self.dataset = dataset
@@ -37,7 +40,7 @@ class PoseClassifier():
         test_acc = accuracy_score(y_predict, y_test)
         print(f'training accuracy: {train_acc}\ntesting accuracy: {test_acc}')
         self.save_model('randomforest', (model,test_acc))
-        
+        return train_acc, test_acc
     def train_svm(self):
         dataset = self.dataset.get_landmark_dataset()
         
@@ -54,9 +57,8 @@ class PoseClassifier():
 
         test_acc = accuracy_score(y_predict, y_test)
         print(f'training accuracy: {train_acc}\ntesting accuracy: {test_acc}')
-        # print('{}% of samples were classified correctly !'.format(score * 100))
-
         self.save_model('svm', model)
+        return train_acc, test_acc
     
     def train_mlp(self, model: nn.Module, epochs:int = 5):
         device = 'cuda'if torch.cuda.is_available()  else 'cpu' 
@@ -143,6 +145,7 @@ class PoseClassifier():
             results["train_acc"].append(train_acc)
             results["test_loss"].append(test_loss)
             results["test_acc"].append(test_acc)
+            return results["train_acc"][-1], results["test_acc"][-1]
     # TODO: Try out transformer
     # TODO: Try out voting classifier     
     def create_dl_model(n_classes: int,model_type: str = 'mlp') -> nn.Module: 
@@ -177,10 +180,9 @@ class PoseClassifier():
             return model
 
 
-    def train_all(self):
+    def train_ensemble(self):
         return
-    def predict(self):
-        return
+    
     def save_model(self, name:str,model):
         with open('model.pickle', 'wb') as file:
             pickle.dump({name: model}, file)
