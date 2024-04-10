@@ -1,6 +1,6 @@
 import os
 import pickle
-
+import numpy as np
 import mediapipe as mp
 import cv2
 
@@ -112,7 +112,7 @@ class VideoDataset():
                     data.append(landmark_coords)
                     labels.append(dir_)
         with open('data.pickle', 'wb') as file:
-            pickle.dump({'data': data, 'labels': labels}, file)
+            pickle.dump({'data': np.array(data), 'labels': np.array(labels)}, file)
             file.close()
     def get_landmark_dataset(self):
         with open('data.pickle', 'rb') as file:

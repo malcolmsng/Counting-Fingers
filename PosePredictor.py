@@ -1,9 +1,4 @@
 import pickle
-import VideoDataset
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 import numpy as np
 import torch.nn as nn
 import torch
@@ -11,26 +6,26 @@ from torch.utils.data import DataLoader
 import cv2
 import mediapipe as mp
 import numpy as np
+from typing import Union
 
 class PosePredictor():
 
-    def __init__(self, dataset: VideoDataset):
-        self.dataset = dataset
-    def predict(model: object):
+    def __init__(self):
+        print('its predictin time')
+    def predict(self, model, labels: list[Union[str, int]], label_map: dict[int,str]):
         
-        cap = cv2.VideoCapture(2)
+        cap = cv2.VideoCapture(0)
 
         mp_hands = mp.solutions.hands
         mp_drawing = mp.solutions.drawing_utils
         mp_drawing_styles = mp.solutions.drawing_styles
 
         hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
-        # TODO: account for labels
-        # TODO: account for 
-        labels_dict = {0: 'A', 1: 'B', 2: 'L'}
+        # TODO: account for exception properly
+        
         while True:
 
-            data_aux = []
+            landmark_coords = []
             x_ = []
             y_ = []
 
@@ -72,8 +67,8 @@ class PosePredictor():
                     for i in range(len(hand_landmarks.landmark)):
                         x = hand_landmarks.landmark[i].x
                         y = hand_landmarks.landmark[i].y
-                        data_aux.append(x - min(x_))
-                        data_aux.append(y - min(y_))
+                        landmark_coords.append(x - min(x_))
+                        landmark_coords.append(y - min(y_))
 
                 x1 = int(min(x_) * W) - 10
                 y1 = int(min(y_) * H) - 10
@@ -81,14 +76,31 @@ class PosePredictor():
                 x2 = int(max(x_) * W) - 10
                 y2 = int(max(y_) * H) - 10
                 try:
-                    prediction = model.predict([np.asarray(data_aux)])
-                except:
-                    prediction =  torch.argmax(torch.softmax(model(torch.tensor(data_aux))))
-                predicted_character = labels_dict[int(prediction[0])]
+                    
+                    prediction = model.predict([np.asarray(landmark_coords)])
+                    print(prediction)
+                    predicted_character = label_map[int(prediction[0])]
+                    print(predicted_character)
+                except Exception as e:
+                    device = 'cuda'if torch.cuda.is_available()  else 'cpu'
+                    x = torch.tensor(landmark_coords).to(device) 
+                    prediction =  torch.argmax(torch.softmax(model(x), dim = -1))
+                    predicted_character = label_map[prediction.item()]
+                
+                
+                
 
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 0), 4)
                 cv2.putText(frame, predicted_character, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 0), 3,
                             cv2.LINE_AA)
 
             cv2.imshow('frame', frame)
-            cv2.waitKey(1)
+            key = cv2.waitKey(1)
+            if  key == ord('q'):
+                break
+            elif key == ord("p"):
+                cv2.waitKey(0)
+            elif key == ord("e"):
+                cap.release()
+                break
+            # create directory
