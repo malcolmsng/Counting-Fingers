@@ -69,6 +69,11 @@ class PosePredictor():
                         y = hand_landmarks.landmark[i].y
                         landmark_coords.append(x - min(x_))
                         landmark_coords.append(y - min(y_))
+                # if 1 hand, pad
+            
+                if len(landmark_coords) == 42:
+                    landmark_coords += [0] * 42
+                    
 
                 x1 = int(min(x_) * W) - 10
                 y1 = int(min(y_) * H) - 10
@@ -77,11 +82,18 @@ class PosePredictor():
                 y2 = int(max(y_) * H) - 10
                 try:
                     
+                    
                     prediction = model.predict([np.asarray(landmark_coords)])
-                    print(prediction)
+                    
                     predicted_character = label_map[int(prediction[0])]
-                    print(predicted_character)
+                    
+                except ValueError as e:
+                    # more than 1 hand detected
+                    print(e)
+                    error = "Incorrect number of hands detected"
+                    print(error)
                 except Exception as e:
+                    print(e)
                     device = 'cuda'if torch.cuda.is_available()  else 'cpu'
                     x = torch.tensor(landmark_coords).to(device) 
                     prediction =  torch.argmax(torch.softmax(model(x), dim = -1))

@@ -45,7 +45,7 @@ class PoseTrainer():
         # self.save_model('randomforest', (model,test_acc))
         res = {'model': model, 'labels': labels, 'label_map': self.label_index_map}
         return res
-    def train_svm(self):
+    def train_svm(self) -> dict[str,object]:
         data, labels = self.data, self.labels
         X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.2, shuffle=True, stratify=labels)
 
@@ -62,7 +62,7 @@ class PoseTrainer():
         return res
     
     def train_mlp(self, model: nn.Module, epochs:int = 5):
-        print(torch.cuda.is_available())
+        
         device = 'cuda'if torch.cuda.is_available()  else 'cpu' 
         data, labels = self.data, self.labels
         results = {
@@ -102,7 +102,6 @@ class PoseTrainer():
                 # forward
                 y_pred = model(X)
                 # calc loss
-                print(device, y_pred.type(),y.type())
                 loss = loss_fn(y_pred,y)
                 train_loss += loss.item()
                 # reset optimizer
@@ -183,6 +182,7 @@ class PoseTrainer():
                     x = self.layer_2(x)
                     x = self.layer_3(x)
                     return x
+            
             model = BabyEncoder()
             return model
 

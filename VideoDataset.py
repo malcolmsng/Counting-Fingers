@@ -108,7 +108,12 @@ class VideoDataset():
                             # recentering
                             landmark_coords.append(x - min(x_))
                             landmark_coords.append(y - min(y_))
+                       
+                        if len(landmark_coords) == 42:
+                            landmark_coords += [0] * 42
+                            
 
+                        
                     data.append(landmark_coords)
                     labels.append(dir_)
         with open('data.pickle', 'wb') as file:
